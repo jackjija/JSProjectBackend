@@ -1,13 +1,10 @@
 const express = require('express');
 const Sequelize = require('sequelize');
 const app = express();
-const session = require('express-session');
 require('dotenv').config();
 
 const port  = process.env.PORT || 5000;
-app.use(express.urlencoded({extended:false}));
 app.use(express.json());
-app.use(session({secret:"mysession",resave:false,saveUninitialized:true}));
 
 const sequelize = new Sequelize('database', 'username', 'password', {
     host:'localhost',
