@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const app = express();
 require('dotenv').config();
 
-const port  = process.env.PORT || 5000;
+const port  = process.env.PORT || 3000;
 app.use(express.json());
 
 const sequelize = new Sequelize('database', 'username', 'password', {
