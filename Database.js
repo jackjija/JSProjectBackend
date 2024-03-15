@@ -16,79 +16,69 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 });
 
 const user = sequelize.define("user", {
-    userid:{
+    user_id:{
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey:true
     } ,
-    username :{
+    fname :{
         type: Sequelize.STRING
     } ,
-    password :{
+    lname : {
         type: Sequelize.STRING
-    } ,
-    name :{
-        type: Sequelize.STRING
-    } ,
+    },
     phone :{
         type: Sequelize.STRING
     },
     address :{
         type: Sequelize.STRING
-    },
-    role:{
-        type: Sequelize.STRING,
-        defaultValue: 'user'
     }
 });
 const product = sequelize.define("product",{
-    sanitarywareid:{
+    product_id:{
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    sanitarywarename:{
+    product_name:{
         type: Sequelize.STRING
     },
-    sanitarywaretype:{
-        type: Sequelize.STRING
-    },
-    sanitarywareprice:{
-        type: Sequelize.STRING
-    }
-});
-const cart = sequelize.define("cart",{
-    cartid:{
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
-    },
-    userid:{
+    category_id:{
         type: Sequelize.INTEGER
     },
-    sanitarywareid:{
-        type: Sequelize.JSON
+    price:{
+        type: Sequelize.STRING
     }
 });
 const order = sequelize.define("order",{
-    orderid:{
+    order_id:{
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    userid:{
+    user_id:{
         type: Sequelize.INTEGER
     },
-    cartid:{
-        type: Sequelize.INTEGER
+    product_id:{
+        type: Sequelize.JSON
+    }
+});
+const categories = sequelize.define("categories",{
+    category_id:{
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
     },
+    category_name:{
+        type: Sequelize.STRING,
+    }
 });
 
 sequelize.sync();
 
-//Register user
+//user
 app.get("/users", (req, res) => {
-    user.findAll() //select * from
+    user.findAll()
       .then((user) => {
         res.json(user);
       })
@@ -97,7 +87,7 @@ app.get("/users", (req, res) => {
       });
   });
 
-  app.post("/register", async (req, res) => {
+  app.post("/users", async (req, res) => {
     console.log(req.body);
       user.create(req.body)
         .then((user) => {
@@ -109,7 +99,7 @@ app.get("/users", (req, res) => {
     }
   );
 
-app.get("/user/:id",(req,res) => {
+app.get("/users/:id",(req,res) => {
     user.findByPk(req.params.id).then(data => {
         if (data) {
             res.json(data);
@@ -122,7 +112,7 @@ app.get("/user/:id",(req,res) => {
     });
 });
 
-app.put('/user/:id',(req,res) => {
+app.put('/users/:id',(req,res) => {
     console.log(req.data)
     user.findByPk(req.params.id).then(user => {
         if (!user) {
@@ -139,7 +129,7 @@ app.put('/user/:id',(req,res) => {
     });
 });
 
-app.delete("/user/:id",(req,res) => {
+app.delete("/users/:id",(req,res) => {
     user.findByPk(req.params.id).then(data => {
         if (data) {
             data.destroy().then(() => {
@@ -162,7 +152,7 @@ app.get('/products',(req, res) =>{
     });
 });
 
-app.get('/product/:id',(req, res) =>{
+app.get('/products/:id',(req, res) =>{
     product.findByPk(req.params.id).then(product => {
         if (!product){
             res.status(404).send('Product not found');
@@ -174,7 +164,7 @@ app.get('/product/:id',(req, res) =>{
     });
 });
 
-app.post('/product',(req, res) =>{
+app.post('/products',(req, res) =>{
     product.create(req.body).then(product => {
         res.send(product);
     }).catch(err => {
@@ -182,7 +172,7 @@ app.post('/product',(req, res) =>{
     });
 });
 
-app.put('/product/:id',(req,res) => {
+app.put('/products/:id',(req,res) => {
     product.findByPk(req.params.id).then(product => {
         if (!product) {
             res.status(404).send('Product not found');
@@ -198,7 +188,7 @@ app.put('/product/:id',(req,res) => {
     });
 });
 
-app.delete('/product/:id',(req,res) => {
+app.delete('/products/:id',(req,res) => {
     product.findByPk(req.params.id).then(product=> {
         if (!product){
             res.status(404).send('Product not found');
@@ -214,62 +204,65 @@ app.delete('/product/:id',(req,res) => {
     });
 });
 
-//Cart
-app.get('/carts',(req,res) => {
-    cart.findAll().then(cart => {
-        res.json(cart);
+//Category
+app.get('/categories',(req, res) => {
+    categories.findAll().then(category => {
+        res.json(category);
     }).catch(err => {
         res.status(500).send(err);
     });
 });
 
-app.get('/cart/:id',(req, res) =>{
-    cart.findByPk(req.params.id).then(cart => {
-        if (!cart){
-            res.status(404).send('Cart not found');
-        } else{
-            res.json(cart);
+app.get('/categories/:id',(req, res) =>{
+    categories.findByPk(req.params.id).then(category => {
+        if(!category){
+            res.status(404).send('Categories not found');
+        } else {
+            res.json(category);
         }
     }).catch(err => {
         res.status(500).send(err);
     });
 });
 
-app.post('/cart', async (req, res) => {
-    try {
-        const newCart = await cart.create(req.body);
-        res.status(201).json(newCart);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+app.post('/categories',(req, res) => {
+    categories.create(req.body).then(category =>{
+        res.send(category);
+    }).catch(err => {
+        res.status(500).send(err);
+    });
 });
 
-app.put('/cart/:id', async (req, res) => {
-    try {
-        const cart = await cart.findByPk(req.params.id);
-        if (!cart) {
-            res.status(404).json({ error: 'Cart not found' });
+app.put('/categories/:id',(req,res) => {
+    categories.findByPk(req.params.id).then(category => {
+        if (!category) {
+            res.status(404).send('Categories not found');
         } else {
-            await cart.update(req.body);
-            res.json(cart);
+            category.update(req.body).then(() =>{
+                res.send(category);
+            }).catch(err => {
+                res.status(500).send(err);
+            });
         }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    }).catch(err => {
+        res.status(500).send(err);
+    });
 });
 
-app.delete('/cart/:id', async (req, res) => {
-    try {
-        const cart = await cart.findByPk(req.params.id);
-        if (!cart) {
-            res.status(404).json({ error: 'Cart not found' });
+app.delete('/categories/:id',(req,res) => {
+    categories.findByPk(req.params.id).then(category=> {
+        if (!category){
+            res.status(404).send('Categories not found');
         } else {
-            await cart.destroy();
-            res.status(204).end();
+            category.destroy().then(() => {
+                res.send({});
+            }).catch(err => {
+                res.status(500).send(err);
+            });
         }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    }).catch(err => {
+        res.status(500).send(err);
+    });
 });
 
 //Order
@@ -281,7 +274,7 @@ app.get('/orders',(req, res) =>{
     });
 });
 
-app.get('/order/:id',(req, res) =>{
+app.get('/orders/:id',(req, res) =>{
     order.findByPk(req.params.id).then(order => {
         if (!order){
             res.status(404).send('Order not found');
@@ -293,7 +286,7 @@ app.get('/order/:id',(req, res) =>{
     });
 });
 
-app.post('/order',(req, res) =>{
+app.post('/orders',(req, res) =>{
     order.create(req.body).then(order => {
         res.send(order);
     }).catch(err => {
@@ -317,7 +310,7 @@ app.put('/order/:id',(req,res) => {
     });
 });
 
-app.delete('/order/:id',(req,res) => {
+app.delete('/orders/:id',(req,res) => {
     order.findByPk(req.params.id).then(order=> {
         if (!order){
             res.status(404).send('Order not found');
